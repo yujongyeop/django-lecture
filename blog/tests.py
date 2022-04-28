@@ -15,17 +15,13 @@ class TestView(TestCase):
         # 1.3
         soup = BeautifulSoup(response.content, 'html.parser')
         self.assertEqual(soup.title.text, 'Blog')
-        # 1.4
-        navbar = soup.nav
-        # 1.5
-        self.assertIn('Blog', navbar.text)
-        self.assertIn('About Me', navbar.text)
+
 
         # 2.1
         self.assertEqual(Post.objects.count(), 0)
         # 2.2
-        main_area = soup.find('div',id='main_area')
-        self.assertIn('아직 게시물이 없습니다', main_area.text)
+        main_area = soup.find('div',id='main-area')
+        self.assertIn('아직 게시물이 없습니다.', main_area.text)
 
         # 3.1
         post_001 = Post.objects.create(
@@ -39,7 +35,7 @@ class TestView(TestCase):
         self.assertEqual(Post.objects.count(), 2)
 
         # 3.2
-        response = self.client.get('blog/')
+        response = self.client.get('/blog/')
         soup = BeautifulSoup(response.content, 'html.parser')
         self.assertEqual(response.status_code, 200)
         # 3.3
@@ -65,9 +61,7 @@ class TestView(TestCase):
         soup = BeautifulSoup(response.content, 'html.parser')
 
         # 2.2
-        navbar = soup.nav
-        self.assertIn('Blog', navbar.text)
-        self.assertIn('About Me', navbar.text)
+        self.navbar_test(soup)
 
         # 2.3
         self.assertIn(post_001.title, soup.title.text)
@@ -76,3 +70,18 @@ class TestView(TestCase):
         main_area = soup.find('div', id='main-area')
         post_area = main_area.find('div', id='post-area')
         self.assertIn(post_001.title, post_area.text)
+
+    def navbar_test(self, soup):
+        # 1.4
+        navbar = soup.nav
+        # 1.5
+        self.assertIn('Blog', navbar.text)
+        self.assertIn('About Me', navbar.text)
+        logo_btn = navbar.find('a', text='Do It Django')
+        self.assertEqual(logo_btn.attrs['href'], '/')
+        home_btn = navbar.find('a', text='Home')
+        self.assertEqual(home_btn.attrs['href'], '/')
+        blog_btn = navbar.find('a', text='Blog')
+        self.assertEqual(blog_btn.attrs['href'], '/blog/')
+        about_me_btn = navbar.find('a', text='About Me')
+        self.assertEqual(about_me_btn.attrs['href'], '/about_me/')
